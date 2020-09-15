@@ -1,5 +1,5 @@
 # Site settings
-baseURL = "http://kendobson.netlify.app"
+baseURL = "https://kendobson.netlify.app"
 languageCode = "en-us"
 title = "Porfolio Website for Kostis Christodoulou"
 theme = "forty"
