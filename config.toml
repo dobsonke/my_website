@@ -1,7 +1,7 @@
 # Site settings
 baseURL = "https://kendobson.netlify.app"
 languageCode = "en-us"
-title = "Porfolio Website for Kostis Christodoulou"
+title = "Porfolio Website for Ken Dobson"
 theme = "forty"
 
 # Enter your tracking code to enable Google Analytics
