@@ -99,10 +99,10 @@ disqusShortname = ""
       url = "blogs/project2"
 
     [[params.tiles.showcase]]
-      title = "Analyzing AirBnB prices in Bejing"
+      title = "Determining Risk/Returns of Various Stocks"
       subtitle = ""
-      image = "beijing.jpg"
-      url = "blogs/project3"
+      image = "nyse.jpg"
+      url = "blogs/project4"
 
     # You can make more showcases by copy and pasting the code above
 

@@ -14,9 +14,8 @@ output:
 
 
 
-<div id="gdp-breakdown-by-components-of" class="section level1">
-<h1>GDP breakdown by Components of</h1>
-<p>##How have these countries developed since BRICS creation in 2010</p>
+<div id="gdp-breakdown-by-components-of-germany-india-and-the-united-states" class="section level1">
+<h1>GDP breakdown by Components of Germany, India, and the UNited States</h1>
 <p>The first step in this analysis is to make sure the data is easy to work with so it’s key to pivot the years into a column and rename columns to easy to work with names.</p>
 <pre class="r"><code>tidy_GDP_data &lt;- UN_GDP_data %&gt;%
   pivot_longer(cols = `1970`:`2017`, names_to = &quot;Year&quot;, values_to = &quot;Value&quot;) %&gt;%

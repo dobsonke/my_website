@@ -47,8 +47,7 @@ library(kableExtra)
 ```
 
 
-# GDP breakdown by Components of 
-##How have these countries developed since BRICS creation in 2010
+# GDP breakdown by Components of Germany, India, and the UNited States
 
 ```{r read_GDP_data, echo = FALSE}
 

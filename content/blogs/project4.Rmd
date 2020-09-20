@@ -1,0 +1,234 @@
+---
+title: "Session 2: Homework 1"
+author: "Group 2: Ken Dobson, Fabian Sinn, Carlota Castro Perez, Jieyi Cai, Proud Chaikul, Othman Bensouda"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    number_sections: yes 
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+
+```{r load-libraries, warning=FALSE, message=FALSE, echo=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(mosaic)
+library(ggthemes)
+library(lubridate)
+library(fivethirtyeight)
+library(here)
+library(skimr)
+library(janitor)
+library(vroom)
+library(tidyquant)
+library(kableExtra)
+```
+
+# Where Do People Drink The Most Beer, Wine And Spirits?
+
+Back in 2014, [fivethiryeight.com](https://fivethirtyeight.com/features/dear-mona-followup-where-do-people-drink-the-most-beer-wine-and-spirits/) published an article on alcohol consumption in different countries.
+
+```{r, load_alcohol_data, echo=FALSE}
+library(fivethirtyeight)
+data(drinks)
+
+# alcohol_direct <- read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/alcohol-consumption/drinks.csv")
+```
+
+## Checking data quality for drinks dataset 
+
+```{r glimpse_skim_data, echo=FALSE}
+
+#datatypes_drinks <- drinks %>%
+#  sapply(drinks,class) %>% 
+#  kbl()
+
+anyDuplicated(drinks)
+
+anyNA(drinks)
+
+# glimpse(drinks)
+# skim(drinks)
+```
+
+Based on checking the dataset, there are no missing values or any duplicates. Datatypes as indicated in the table. 
+
+## Top 25 beer consuming countries
+
+```{r beer_plot}
+
+top_beer <- drinks %>%
+  arrange(desc(beer_servings))
+
+ggplot(head(top_beer, 25), aes(x=reorder(country, beer_servings), y = beer_servings)) +
+  labs(y = "Servings of Beer", x = "Country", title = "Beer Consumption by Country") +
+  geom_bar(stat='identity', show.legend = FALSE, fill = 'lightblue') +
+  coord_flip() +
+  theme_clean()
+
+```
+
+## Top 25 wine consuming countries
+
+```{r wine_plot}
+
+top_wine <- drinks %>%
+  arrange(desc(wine_servings))
+
+ggplot(head(top_wine, 25), aes(x=reorder(country, wine_servings), y = wine_servings)) +
+  labs(y = "Servings of Wine", x = "Country", title = "Wine Consumption by Country") +
+  geom_bar(stat='identity', show.legend = FALSE, fill = 'lightblue') + 
+  coord_flip() +
+  theme_clean()
+
+
+```
+
+
+# Returns of financial stocks
+
+We;re going to look at some NYSE data to help us make decisions on which stocks offer the best return for our risk.
+
+```{r load_nyse_data, message=FALSE, warning=FALSE, echo=FALSE}
+nyse <- read_csv(here::here("data","nyse.csv"))
+```
+
+```{r companies_per_sector, echo=FALSE}
+
+nyse_comp_sect <- nyse %>% 
+  group_by(sector) %>% 
+  count(sort = TRUE)
+
+nyse_comp_sect %>%
+  kbl(col.names = gsub("[_]", " ", names(nyse_comp_sect))) %>%
+  kable_material(c("striped", "hover")) %>%
+  kable_styling(fixed_thead = T)
+
+ggplot(nyse_comp_sect, aes(x = n, y = reorder(sector, n))) +
+  labs(y = "Sector", x = "# of companies", title = "NYSE - Companies by sector") +
+  geom_bar(stat='identity', show.legend = FALSE) + 
+  geom_col() +
+  theme_clean()
+
+```
+
+
+In the following section, we chose to download data for the following companies as well as the SP500 ETF:
+
+* `GOOG`: Google
+* `RY`: Royal Bank of Canada
+* `AZN`: Astrazeneca
+* `BP`: British Petroleum
+* `DAL`: Delta Air Lines
+* `TM`: Toyota
+* `AMZN`: Amazon
+* `SPY`: SP500 
+
+```{r get_price_data, message=FALSE, warning=FALSE, cache=TRUE, echo=FALSE}
+
+myStocks <- c("GOOG","RY","AZN","BP","DAL","TM","AMZN","SPY") %>%
+  tq_get(get  = "stock.prices",
+         from = "2011-01-01",
+         to   = "2020-08-31") %>%
+  group_by(symbol) 
+
+```
+
+```{r calculate_returns, message=FALSE, warning=FALSE, cache=TRUE, echo=FALSE}
+#calculate daily returns
+myStocks_returns_daily <- myStocks %>%
+  tq_transmute(select     = adjusted, 
+               mutate_fun = periodReturn, 
+               period     = "daily", 
+               type       = "log",
+               col_rename = "daily_returns",
+               cols = c(nested.col))  
+
+#calculate monthly  returns
+myStocks_returns_monthly <- myStocks %>%
+  tq_transmute(select     = adjusted, 
+               mutate_fun = periodReturn, 
+               period     = "monthly", 
+               type       = "arithmetic",
+               col_rename = "monthly_returns",
+               cols = c(nested.col)) 
+
+glimpse(myStocks_returns_monthly)
+
+#calculate yearly returns
+myStocks_returns_annual <- myStocks %>%
+  group_by(symbol) %>%
+  tq_transmute(select     = adjusted, 
+               mutate_fun = periodReturn, 
+               period     = "yearly", 
+               type       = "arithmetic",
+               col_rename = "yearly_returns",
+               cols = c(nested.col))
+```
+
+## Monthly returns of stock portfolio and SP500
+
+Here we calculate some summary statistics to help us evaluate these stocks.
+
+```{r summarise_monthly_returns, echo=FALSE}
+
+stock_returns_monthly <- myStocks_returns_monthly%>% 
+  group_by(symbol) %>% 
+  summarize(Min_return = min(monthly_returns), Max_return = max(monthly_returns), Median_return = median(monthly_returns), Mean_return = mean(monthly_returns), SD_return = sd(monthly_returns))
+  
+stock_returns_monthly %>%
+  kbl(col.names = gsub("[_]", " ", names(stock_returns_monthly))) %>%
+  kable_material(c("striped", "hover")) %>%
+  kable_styling(fixed_thead = T)
+
+```
+
+
+```{r density_monthly_returns, echo=FALSE}
+
+ggplot(myStocks_returns_monthly, aes(x=monthly_returns)) +
+  geom_density(fill = "lightblue", alpha = 0.4) +
+  labs(title = "Monthly returns of portfolio stocks (2011- 08/2020)", x = "Monthly returns", y = "Density") +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 8)) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 8)) + 
+  facet_wrap(~symbol, scales='fixed') +
+  theme_clean()
+
+```
+
+Looking at the plots of each stock, the Delta airlines stock is the riskiest as it has the highest volatility. As to be expected, the SP500 shows the lowest volatility compared to the chosen stocks as it tracks the average performance of all stocks in the respective index.
+
+```{r risk_return_plot, echo=FALSE}
+
+ggplot(stock_returns_monthly, aes(x = SD_return, y = Mean_return, colour = symbol)) +
+  geom_point() +
+  ggrepel::geom_text_repel(aes(label = symbol)) +
+  labs(title = "Expected monthly return of portfolio stocks",
+       y = "Expected return (mean)", x = "Risk (standard deviation)") +
+  theme_clean() +
+  theme(legend.position = 'none')
+
+
+```
+
+The plot indicates that Amazon is clearly the stock with the strongest risk-reward profile in terms of expected return based on the mean monthly stock performance, followed by Google and Astra Zeneca. Looking at British Petroleum, the stock is underperforming in terms of risk-reward with a high standard deviation and an almost non-existent expected return.  

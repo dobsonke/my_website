@@ -181,7 +181,7 @@ beijing_properties.New %>%
   #col.names just accounts for the names of the variables
   kbl(col.names = c("Property type","Count","Percentage (%)")) %>%
   #Customize the table by defining the font
-  kable_material(c("striped", "hover")) %>%
+  kable_material(c("hover")) %>%
   kable_styling(fixed_thead = T)
 
 ```
@@ -208,7 +208,7 @@ beijing_nights %>%
   #col.names just accounts for the names of the variables
   kbl(col.names = c("Minimum nights","Count","Percentage (%)")) %>%
   #Customization
-  kable_material(c("striped", "hover")) %>%
+  kable_material(c("hover")) %>%
   kable_styling(fixed_thead = T)
   
 ```
@@ -575,7 +575,7 @@ rating_cormat <- beijing_corr %>%
 rating_cormat[upper.tri(rating_cormat)] <- ""
 rating_cormat %>%
   kbl() %>%
-  kable_material(c("striped", "hover")) %>%
+  kable_material(c("hover")) %>%
   kable_styling(fixed_thead = T, font_size = 12, full_width = F) 
 #Correlation matrix for num reviews related columns
 review_cormat <- beijing_corr %>% 
@@ -585,7 +585,7 @@ review_cormat <- beijing_corr %>%
 review_cormat[upper.tri(review_cormat)] <- ""
 review_cormat %>%
   kbl() %>%
-  kable_material(c("striped", "hover")) %>%
+  kable_material(c("hover")) %>%
   kable_styling(fixed_thead = T, font_size = 12, full_width = F)  
 ```
 

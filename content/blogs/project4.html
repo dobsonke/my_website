@@ -1,0 +1,378 @@
+---
+title: "Session 2: Homework 1"
+author: "Group 2: Ken Dobson, Fabian Sinn, Carlota Castro Perez, Jieyi Cai, Proud Chaikul, Othman Bensouda"
+date: "2020-09-20"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    number_sections: yes 
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+<link href="/rmarkdown-libs/lightable/lightable.css" rel="stylesheet" />
+
+
+<div id="where-do-people-drink-the-most-beer-wine-and-spirits" class="section level1">
+<h1>Where Do People Drink The Most Beer, Wine And Spirits?</h1>
+<p>Back in 2014, <a href="https://fivethirtyeight.com/features/dear-mona-followup-where-do-people-drink-the-most-beer-wine-and-spirits/">fivethiryeight.com</a> published an article on alcohol consumption in different countries.</p>
+<div id="checking-data-quality-for-drinks-dataset" class="section level2">
+<h2>Checking data quality for drinks dataset</h2>
+<pre><code>## [1] 0</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+<p>Based on checking the dataset, there are no missing values or any duplicates. Datatypes as indicated in the table.</p>
+</div>
+<div id="top-25-beer-consuming-countries" class="section level2">
+<h2>Top 25 beer consuming countries</h2>
+<pre class="r"><code>top_beer &lt;- drinks %&gt;%
+  arrange(desc(beer_servings))
+
+ggplot(head(top_beer, 25), aes(x=reorder(country, beer_servings), y = beer_servings)) +
+  labs(y = &quot;Servings of Beer&quot;, x = &quot;Country&quot;, title = &quot;Beer Consumption by Country&quot;) +
+  geom_bar(stat=&#39;identity&#39;, show.legend = FALSE, fill = &#39;lightblue&#39;) +
+  coord_flip() +
+  theme_clean()</code></pre>
+<p><img src="/blogs/project4_files/figure-html/beer_plot-1.png" width="648" style="display: block; margin: auto;" /></p>
+</div>
+<div id="top-25-wine-consuming-countries" class="section level2">
+<h2>Top 25 wine consuming countries</h2>
+<pre class="r"><code>top_wine &lt;- drinks %&gt;%
+  arrange(desc(wine_servings))
+
+ggplot(head(top_wine, 25), aes(x=reorder(country, wine_servings), y = wine_servings)) +
+  labs(y = &quot;Servings of Wine&quot;, x = &quot;Country&quot;, title = &quot;Wine Consumption by Country&quot;) +
+  geom_bar(stat=&#39;identity&#39;, show.legend = FALSE, fill = &#39;lightblue&#39;) + 
+  coord_flip() +
+  theme_clean()</code></pre>
+<p><img src="/blogs/project4_files/figure-html/wine_plot-1.png" width="648" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="returns-of-financial-stocks" class="section level1">
+<h1>Returns of financial stocks</h1>
+<p>We;re going to look at some NYSE data to help us make decisions on which stocks offer the best return for our risk.</p>
+<table class=" lightable-material lightable-striped lightable-hover table" style='font-family: "Source Sans Pro", helvetica, sans-serif; margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;'>
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+sector
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Finance
+</td>
+<td style="text-align:right;">
+97
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Consumer Services
+</td>
+<td style="text-align:right;">
+79
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Public Utilities
+</td>
+<td style="text-align:right;">
+60
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Capital Goods
+</td>
+<td style="text-align:right;">
+45
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Health Care
+</td>
+<td style="text-align:right;">
+45
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Energy
+</td>
+<td style="text-align:right;">
+42
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Technology
+</td>
+<td style="text-align:right;">
+40
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Basic Industries
+</td>
+<td style="text-align:right;">
+39
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Consumer Non-Durables
+</td>
+<td style="text-align:right;">
+31
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Miscellaneous
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Transportation
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Consumer Durables
+</td>
+<td style="text-align:right;">
+8
+</td>
+</tr>
+</tbody>
+</table>
+<p><img src="/blogs/project4_files/figure-html/companies_per_sector-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>In the following section, we chose to download data for the following companies as well as the SP500 ETF:</p>
+<ul>
+<li><code>GOOG</code>: Google</li>
+<li><code>RY</code>: Royal Bank of Canada</li>
+<li><code>AZN</code>: Astrazeneca</li>
+<li><code>BP</code>: British Petroleum</li>
+<li><code>DAL</code>: Delta Air Lines</li>
+<li><code>TM</code>: Toyota</li>
+<li><code>AMZN</code>: Amazon</li>
+<li><code>SPY</code>: SP500</li>
+</ul>
+<pre><code>## Rows: 928
+## Columns: 3
+## Groups: symbol [8]
+## $ symbol          &lt;chr&gt; &quot;GOOG&quot;, &quot;GOOG&quot;, &quot;GOOG&quot;, &quot;GOOG&quot;, &quot;GOOG&quot;, &quot;GOOG&quot;, &quot;GO...
+## $ date            &lt;date&gt; 2011-01-31, 2011-02-28, 2011-03-31, 2011-04-29, 20...
+## $ monthly_returns &lt;dbl&gt; -0.00660, 0.02172, -0.04343, -0.07270, -0.02772, -0...</code></pre>
+<div id="monthly-returns-of-stock-portfolio-and-sp500" class="section level2">
+<h2>Monthly returns of stock portfolio and SP500</h2>
+<p>Here we calculate some summary statistics to help us evaluate these stocks.</p>
+<table class=" lightable-material lightable-striped lightable-hover table" style='font-family: "Source Sans Pro", helvetica, sans-serif; margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;'>
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+symbol
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Min return
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Max return
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Median return
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Mean return
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+SD return
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+AMZN
+</td>
+<td style="text-align:right;">
+-0.202
+</td>
+<td style="text-align:right;">
+0.269
+</td>
+<td style="text-align:right;">
+0.025
+</td>
+<td style="text-align:right;">
+0.029
+</td>
+<td style="text-align:right;">
+0.082
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AZN
+</td>
+<td style="text-align:right;">
+-0.138
+</td>
+<td style="text-align:right;">
+0.218
+</td>
+<td style="text-align:right;">
+0.010
+</td>
+<td style="text-align:right;">
+0.014
+</td>
+<td style="text-align:right;">
+0.061
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+BP
+</td>
+<td style="text-align:right;">
+-0.221
+</td>
+<td style="text-align:right;">
+0.225
+</td>
+<td style="text-align:right;">
+0.000
+</td>
+<td style="text-align:right;">
+0.001
+</td>
+<td style="text-align:right;">
+0.065
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+DAL
+</td>
+<td style="text-align:right;">
+-0.382
+</td>
+<td style="text-align:right;">
+0.304
+</td>
+<td style="text-align:right;">
+0.019
+</td>
+<td style="text-align:right;">
+0.014
+</td>
+<td style="text-align:right;">
+0.099
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+GOOG
+</td>
+<td style="text-align:right;">
+-0.132
+</td>
+<td style="text-align:right;">
+0.202
+</td>
+<td style="text-align:right;">
+0.013
+</td>
+<td style="text-align:right;">
+0.017
+</td>
+<td style="text-align:right;">
+0.064
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RY
+</td>
+<td style="text-align:right;">
+-0.173
+</td>
+<td style="text-align:right;">
+0.129
+</td>
+<td style="text-align:right;">
+0.010
+</td>
+<td style="text-align:right;">
+0.008
+</td>
+<td style="text-align:right;">
+0.056
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+SPY
+</td>
+<td style="text-align:right;">
+-0.125
+</td>
+<td style="text-align:right;">
+0.127
+</td>
+<td style="text-align:right;">
+0.015
+</td>
+<td style="text-align:right;">
+0.011
+</td>
+<td style="text-align:right;">
+0.038
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+TM
+</td>
+<td style="text-align:right;">
+-0.133
+</td>
+<td style="text-align:right;">
+0.135
+</td>
+<td style="text-align:right;">
+0.005
+</td>
+<td style="text-align:right;">
+0.008
+</td>
+<td style="text-align:right;">
+0.052
+</td>
+</tr>
+</tbody>
+</table>
+<p><img src="/blogs/project4_files/figure-html/density_monthly_returns-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>Looking at the plots of each stock, the Delta airlines stock is the riskiest as it has the highest volatility. As to be expected, the SP500 shows the lowest volatility compared to the chosen stocks as it tracks the average performance of all stocks in the respective index.</p>
+<p><img src="/blogs/project4_files/figure-html/risk_return_plot-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>The plot indicates that Amazon is clearly the stock with the strongest risk-reward profile in terms of expected return based on the mean monthly stock performance, followed by Google and Astra Zeneca. Looking at British Petroleum, the stock is underperforming in terms of risk-reward with a high standard deviation and an almost non-existent expected return.</p>
+</div>
+</div>

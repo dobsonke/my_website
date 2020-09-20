@@ -18,6 +18,17 @@
     </item>
     
     <item>
+      <title>Session 2: Homework 1</title>
+      <link>https://kendobson.netlify.app/blogs/project4/</link>
+      <pubDate>Sun, 20 Sep 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://kendobson.netlify.app/blogs/project4/</guid>
+      <description>Where Do People Drink The Most Beer, Wine And Spirits?Back in 2014, fivethiryeight.com published an article on alcohol consumption in different countries.
+Checking data quality for drinks dataset## [1] 0## [1] FALSEBased on checking the dataset, there are no missing values or any duplicates. Datatypes as indicated in the table.
+Top 25 beer consuming countriestop_beer &amp;lt;- drinks %&amp;gt;%arrange(desc(beer_servings))ggplot(head(top_beer, 25), aes(x=reorder(country, beer_servings), y = beer_servings)) +labs(y = &amp;quot;Servings of Beer&amp;quot;, x = &amp;quot;Country&amp;quot;, title = &amp;quot;Beer Consumption by Country&amp;quot;) +geom_bar(stat=&amp;#39;identity&amp;#39;, show.</description>
+    </item>
+    
+    <item>
       <title>Session 4: Homework 2</title>
       <link>https://kendobson.netlify.app/blogs/homework2/</link>
       <pubDate>Sun, 20 Sep 2020 00:00:00 +0000</pubDate>
@@ -43,8 +54,7 @@ expected_rentals &amp;lt;- bike %&amp;gt;%filter(year &amp;gt;=2015 &amp;amp; y
       <pubDate>Sun, 20 Sep 2020 00:00:00 +0000</pubDate>
       
       <guid>https://kendobson.netlify.app/blogs/project2/</guid>
-      <description>GDP breakdown by Components of##How have these countries developed since BRICS creation in 2010
-The first step in this analysis is to make sure the data is easy to work with so it’s key to pivot the years into a column and rename columns to easy to work with names.
+      <description>GDP breakdown by Components of Germany, India, and the UNited StatesThe first step in this analysis is to make sure the data is easy to work with so it’s key to pivot the years into a column and rename columns to easy to work with names.
 tidy_GDP_data &amp;lt;- UN_GDP_data %&amp;gt;%pivot_longer(cols = `1970`:`2017`, names_to = &amp;quot;Year&amp;quot;, values_to = &amp;quot;Value&amp;quot;) %&amp;gt;%mutate(Value = Value/1e9, IndicatorName = case_when(IndicatorName == &amp;quot;Final consumption expenditure&amp;quot; ~ &amp;quot;Final_Exp&amp;quot;,IndicatorName == &amp;quot;Household consumption expenditure (including Non-profit institutions serving households)&amp;quot; ~ &amp;quot;Household_Exp&amp;quot;,IndicatorName == &amp;quot;General government final consumption expenditure&amp;quot; ~ &amp;quot;Govt_Exp&amp;quot;,IndicatorName == &amp;quot;Gross capital formation&amp;quot; ~ &amp;quot;GCF&amp;quot;,IndicatorName == &amp;quot;Gross fixed capital formation (including Acquisitions less disposals of valuables)&amp;quot; ~ &amp;quot;GFCF&amp;quot;,IndicatorName == &amp;quot;Exports of goods and services&amp;quot; ~ &amp;quot;Exports&amp;quot;,IndicatorName == &amp;quot;Imports of goods and services&amp;quot; ~ &amp;quot;Imports&amp;quot;,IndicatorName == &amp;quot;Agriculture, hunting, forestry, fishing (ISIC A-B)&amp;quot; ~ &amp;quot;ISICAB&amp;quot;,IndicatorName == &amp;quot;Mining, Manufacturing, Utilities (ISIC C-E)&amp;quot; ~ &amp;quot;ISICCE&amp;quot;,IndicatorName == &amp;quot;Manufacturing (ISIC D)&amp;quot; ~ &amp;quot;ISIC D&amp;quot;,IndicatorName == &amp;quot;Construction (ISIC F)&amp;quot; ~ &amp;quot;ISIC F&amp;quot;,IndicatorName == &amp;quot;Wholesale, retail trade, restaurants and hotels (ISICGH)&amp;quot; ~ &amp;quot;Retail/Tourism&amp;quot;,IndicatorName == &amp;quot;Transport, storage and communication (ISIC I)&amp;quot; ~ &amp;quot;ISICI&amp;quot;,IndicatorName == &amp;quot;Other Activities (ISIC J-P)&amp;quot; ~ &amp;quot;ISICJP&amp;quot;,IndicatorName == &amp;quot;Total Value Added&amp;quot; ~ &amp;quot;Total Value&amp;quot;,IndicatorName == &amp;quot;Gross Domestic Product (GDP)&amp;quot; ~ &amp;quot;GDP&amp;quot;))# Let us compare GDP components for these 3 countriescountry_list &amp;lt;- c(&amp;quot;United States&amp;quot;,&amp;quot;Germany&amp;quot;, &amp;quot;India&amp;quot;)Breakdown by ComponentHere the code is provided to demonstrate how this plot is put together.</description>
     </item>
     
