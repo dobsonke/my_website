@@ -8,27 +8,6 @@
     <language>en-us</language>
     <lastBuildDate>Tue, 31 Oct 2017 22:27:21 -0500</lastBuildDate><atom:link href="https://kendobson.netlify.app/blogs/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Final Group Work - Beijing AirBnBs</title>
-      <link>https://kendobson.netlify.app/blogs/project3/</link>
-      <pubDate>Sun, 20 Sep 2020 00:00:00 +0000</pubDate>
-      
-      <guid>https://kendobson.netlify.app/blogs/project3/</guid>
-      <description>AirBnB analytics - BeijingIntroductionThe following project focuses on the analysis of an AirBnB dataset. As part of the project we are going to perform Exploratory Data Analysis (EDA) and Data visualization.
-Executive summaryThe dataset obtained from airBnB contained a vast amount of information which allows for the development of a broad range of insights into the operations of airBnB in Beijing.</description>
-    </item>
-    
-    <item>
-      <title>Session 2: Homework 1</title>
-      <link>https://kendobson.netlify.app/blogs/project4/</link>
-      <pubDate>Sun, 20 Sep 2020 00:00:00 +0000</pubDate>
-      
-      <guid>https://kendobson.netlify.app/blogs/project4/</guid>
-      <description>Where Do People Drink The Most Beer, Wine And Spirits?Back in 2014, fivethiryeight.com published an article on alcohol consumption in different countries.
-Checking data quality for drinks dataset## [1] 0## [1] FALSEBased on checking the dataset, there are no missing values or any duplicates. Datatypes as indicated in the table.
-Top 25 beer consuming countriestop_beer &amp;lt;- drinks %&amp;gt;%arrange(desc(beer_servings))ggplot(head(top_beer, 25), aes(x=reorder(country, beer_servings), y = beer_servings)) +labs(y = &amp;quot;Servings of Beer&amp;quot;, x = &amp;quot;Country&amp;quot;, title = &amp;quot;Beer Consumption by Country&amp;quot;) +geom_bar(stat=&amp;#39;identity&amp;#39;, show.</description>
-    </item>
-    
-    <item>
       <title>Session 4: Homework 2</title>
       <link>https://kendobson.netlify.app/blogs/homework2/</link>
       <pubDate>Sun, 20 Sep 2020 00:00:00 +0000</pubDate>

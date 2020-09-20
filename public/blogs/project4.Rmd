@@ -1,6 +1,6 @@
 ---
-title: "Session 2: Homework 1"
-author: "Group 2: Ken Dobson, Fabian Sinn, Carlota Castro Perez, Jieyi Cai, Proud Chaikul, Othman Bensouda"
+title: ""
+author: ""
 date: "`r Sys.Date()`"
 output:
   html_document:
@@ -43,67 +43,6 @@ library(vroom)
 library(tidyquant)
 library(kableExtra)
 ```
-
-# Where Do People Drink The Most Beer, Wine And Spirits?
-
-Back in 2014, [fivethiryeight.com](https://fivethirtyeight.com/features/dear-mona-followup-where-do-people-drink-the-most-beer-wine-and-spirits/) published an article on alcohol consumption in different countries.
-
-```{r, load_alcohol_data, echo=FALSE}
-library(fivethirtyeight)
-data(drinks)
-
-# alcohol_direct <- read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/alcohol-consumption/drinks.csv")
-```
-
-## Checking data quality for drinks dataset 
-
-```{r glimpse_skim_data, echo=FALSE}
-
-#datatypes_drinks <- drinks %>%
-#  sapply(drinks,class) %>% 
-#  kbl()
-
-anyDuplicated(drinks)
-
-anyNA(drinks)
-
-# glimpse(drinks)
-# skim(drinks)
-```
-
-Based on checking the dataset, there are no missing values or any duplicates. Datatypes as indicated in the table. 
-
-## Top 25 beer consuming countries
-
-```{r beer_plot}
-
-top_beer <- drinks %>%
-  arrange(desc(beer_servings))
-
-ggplot(head(top_beer, 25), aes(x=reorder(country, beer_servings), y = beer_servings)) +
-  labs(y = "Servings of Beer", x = "Country", title = "Beer Consumption by Country") +
-  geom_bar(stat='identity', show.legend = FALSE, fill = 'lightblue') +
-  coord_flip() +
-  theme_clean()
-
-```
-
-## Top 25 wine consuming countries
-
-```{r wine_plot}
-
-top_wine <- drinks %>%
-  arrange(desc(wine_servings))
-
-ggplot(head(top_wine, 25), aes(x=reorder(country, wine_servings), y = wine_servings)) +
-  labs(y = "Servings of Wine", x = "Country", title = "Wine Consumption by Country") +
-  geom_bar(stat='identity', show.legend = FALSE, fill = 'lightblue') + 
-  coord_flip() +
-  theme_clean()
-
-
-```
-
 
 # Returns of financial stocks
 

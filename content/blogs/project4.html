@@ -1,7 +1,7 @@
 ---
-title: "Session 2: Homework 1"
-author: "Group 2: Ken Dobson, Fabian Sinn, Carlota Castro Perez, Jieyi Cai, Proud Chaikul, Othman Bensouda"
-date: "2020-09-20"
+title: ""
+author: ""
+date: "2020-09-21"
 output:
   html_document:
     theme: flatly
@@ -16,40 +16,6 @@ output:
 <link href="/rmarkdown-libs/lightable/lightable.css" rel="stylesheet" />
 
 
-<div id="where-do-people-drink-the-most-beer-wine-and-spirits" class="section level1">
-<h1>Where Do People Drink The Most Beer, Wine And Spirits?</h1>
-<p>Back in 2014, <a href="https://fivethirtyeight.com/features/dear-mona-followup-where-do-people-drink-the-most-beer-wine-and-spirits/">fivethiryeight.com</a> published an article on alcohol consumption in different countries.</p>
-<div id="checking-data-quality-for-drinks-dataset" class="section level2">
-<h2>Checking data quality for drinks dataset</h2>
-<pre><code>## [1] 0</code></pre>
-<pre><code>## [1] FALSE</code></pre>
-<p>Based on checking the dataset, there are no missing values or any duplicates. Datatypes as indicated in the table.</p>
-</div>
-<div id="top-25-beer-consuming-countries" class="section level2">
-<h2>Top 25 beer consuming countries</h2>
-<pre class="r"><code>top_beer &lt;- drinks %&gt;%
-  arrange(desc(beer_servings))
-
-ggplot(head(top_beer, 25), aes(x=reorder(country, beer_servings), y = beer_servings)) +
-  labs(y = &quot;Servings of Beer&quot;, x = &quot;Country&quot;, title = &quot;Beer Consumption by Country&quot;) +
-  geom_bar(stat=&#39;identity&#39;, show.legend = FALSE, fill = &#39;lightblue&#39;) +
-  coord_flip() +
-  theme_clean()</code></pre>
-<p><img src="/blogs/project4_files/figure-html/beer_plot-1.png" width="648" style="display: block; margin: auto;" /></p>
-</div>
-<div id="top-25-wine-consuming-countries" class="section level2">
-<h2>Top 25 wine consuming countries</h2>
-<pre class="r"><code>top_wine &lt;- drinks %&gt;%
-  arrange(desc(wine_servings))
-
-ggplot(head(top_wine, 25), aes(x=reorder(country, wine_servings), y = wine_servings)) +
-  labs(y = &quot;Servings of Wine&quot;, x = &quot;Country&quot;, title = &quot;Wine Consumption by Country&quot;) +
-  geom_bar(stat=&#39;identity&#39;, show.legend = FALSE, fill = &#39;lightblue&#39;) + 
-  coord_flip() +
-  theme_clean()</code></pre>
-<p><img src="/blogs/project4_files/figure-html/wine_plot-1.png" width="648" style="display: block; margin: auto;" /></p>
-</div>
-</div>
 <div id="returns-of-financial-stocks" class="section level1">
 <h1>Returns of financial stocks</h1>
 <p>We;re going to look at some NYSE data to help us make decisions on which stocks offer the best return for our risk.</p>
