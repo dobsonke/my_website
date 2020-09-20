@@ -113,24 +113,8 @@ disqusShortname = ""
     # For more informtion take a look at the README.
     # To add more blogs just copy and paste the code.
 
-  # Section Type Two
-  [params.two]
-    enable = true
-    title = "Massa libero"
-    subtitle = """Nullam et orci eu lorem consequat tincidunt vivamus et sagittis libero. 
-    Mauris aliquet magna magna sed nunc rhoncus pharetra. 
-    Pellentesque condimentum sem. In efficitur ligula tate urna. Maecenas laoreet massa vel lacinia pellentesque lorem ipsum dolor. 
-    Nullam et orci eu lorem consequat tincidunt. Vivamus et sagittis libero.
-    Mauris aliquet magna magna sed nunc rhoncus amet pharetra et feugiat tempus."""
-    buttonText = "Get Started"
-    url = "blogs"
-
 
   # Contact section
-  [params.contact]
-    enable = true
-    buttonSend = "Send message"
-    buttonClear = "Clear"
 
     # Since this template is static, the contact form uses www.formspree.io as a
     # proxy. The form makes a POST request to their servers to send the actual
@@ -158,10 +142,10 @@ disqusShortname = ""
     
     [[params.footer.social]]
       icon = "fa-github"
-      url= "https://www.github.com"
+      url= "https://github.com/dobsonke/"
       label = "GitHub"
 
     [[params.footer.social]]
       icon = "fa-linkedin"
-      url= "https://www.linkedin.com"
+      url= "https://www.linkedin.com/in/ken-dobson-16a65912a/"
       label = "LinkedIn"
