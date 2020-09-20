@@ -92,9 +92,9 @@ disqusShortname = ""
     # Display your showcases here.
     
     [[params.tiles.showcase]]
-      title = "GDP Analysis of Mature vs Emerging Markets"
-      subtitle = "The shift "
-      image = "pic01.jpg"
+      title = "Effect of Covid on Bike Rentals in London"
+      subtitle = ""
+      image = "bikes.jpg"
       url = "blogs/project1"
 
     [[params.tiles.showcase]]
