@@ -1,0 +1,172 @@
+---
+title: "Session 6: Homework 3"
+author: "Your name goes here"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+
+```{r load-libraries, echo=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(mosaic)
+library(ggthemes)
+library(GGally)
+library(readxl)
+library(here)
+library(skimr)
+library(janitor)
+library(broom)
+library(tidyquant)
+library(infer)
+library(openintro)
+library(kableExtra)
+```
+
+
+# GDP breakdown by Components of 
+##How have these countries developed since BRICS creation in 2010
+
+```{r read_GDP_data, echo = FALSE}
+
+UN_GDP_data  <-  read_excel(here::here("data", "Download-GDPconstant-USD-countries.xls"), # Excel filename
+                sheet="Download-GDPconstant-USD-countr", # Sheet name
+                skip=2) # Number of rows to skip
+
+```
+
+The first step in this analysis is to make sure the data is easy to work with so it's key to pivot the years into a column and rename columns to easy to work with names.
+
+```{r reshape_GDP_data}
+
+tidy_GDP_data <- UN_GDP_data %>%
+  pivot_longer(cols = `1970`:`2017`, names_to = "Year", values_to = "Value") %>%
+  mutate(Value = Value/1e9, IndicatorName = case_when(
+    IndicatorName == "Final consumption expenditure" ~ "Final_Exp",
+    IndicatorName == "Household consumption expenditure (including Non-profit institutions serving households)" ~ "Household_Exp",
+    IndicatorName == "General government final consumption expenditure" ~ "Govt_Exp",
+    IndicatorName == "Gross capital formation" ~ "GCF",
+    IndicatorName == "Gross fixed capital formation (including Acquisitions less disposals of valuables)" ~ "GFCF",
+    IndicatorName == "Exports of goods and services" ~ "Exports",
+    IndicatorName == "Imports of goods and services" ~ "Imports",
+    IndicatorName == "Agriculture, hunting, forestry, fishing (ISIC A-B)" ~ "ISICAB",
+    IndicatorName == "Mining, Manufacturing, Utilities (ISIC C-E)" ~ "ISICCE",
+    IndicatorName == "Manufacturing (ISIC D)" ~ "ISIC D",
+    IndicatorName == "Construction (ISIC F)" ~ "ISIC F",
+    IndicatorName == "Wholesale, retail trade, restaurants and hotels (ISICGH)" ~ "Retail/Tourism",
+    IndicatorName == "Transport, storage and communication (ISIC I)" ~ "ISICI",
+    IndicatorName == "Other Activities (ISIC J-P)" ~ "ISICJP",
+    IndicatorName == "Total Value Added" ~ "Total Value",
+    IndicatorName == "Gross Domestic Product (GDP)" ~ "GDP"
+  ))
+
+
+# Let us compare GDP components for these 3 countries
+country_list <- c("United States","Germany", "India")
+```
+
+# Breakdown by Component
+
+Here the code is provided to demonstrate how this plot is put together.
+
+```{r GDP_graphs, fig.width = 10}
+indicator_list = c("GCF", "Exports", "Govt_Exp", "Household_Exp", "Imports")
+selected <- tidy_GDP_data %>%
+  filter(Country %in% country_list & IndicatorName %in% indicator_list) %>%
+  group_by(Country, IndicatorName, Year)
+
+selected$IndicatorName <- factor(selected$IndicatorName, 
+                                 levels = c("GCF", 
+                                            "Exports", 
+                                            "Govt_Exp", 
+                                            "Household_Exp",
+                                            "Imports"))
+
+ggplot(selected, aes(x = Year, y = Value, group = IndicatorName, color = IndicatorName)) +
+  geom_line(size = 1) +
+  labs(title = "GDP Components over time", 
+       subtitle = "In constant 2010 USD", 
+       y = "Billions US$", 
+       color = "Components of GDP") +
+  facet_wrap(~Country) +
+  scale_x_discrete(breaks = scales::pretty_breaks(5)) +
+  scale_color_discrete(labels = c("Gross capital formation", 
+                                 "Exports", 
+                                 "Government expenditure",
+                                 "Household expenditure",
+                                 "Imports")) +
+  theme(panel.grid = element_line(colour = "#f0f0f0"),
+        strip.background = element_rect(colour = "black", size = 0.5, fill = "grey80"),
+        panel.background = element_rect(colour = "black", size=0.5, fill = NA),
+        legend.key = element_rect(colour = "transparent", fill = "transparent"),
+        axis.title.x = element_blank())
+```
+
+In this graph we get a nominal perspective on the GDP for these three countries and can see how they've each developed in unique ways.
+
+In Germany we see the large increase in the amount of imports and exports beginning in 1990 which coincides with the reunification of Germany, which likely opened up numerous trade opportunities for the country.
+
+In India we can see the beginnings of exponential growth as the country is rapidly developing, with many major companies now having large workforces based in India.
+
+In the United States we can what a huge role Household expenditures play as a component of their GDP. Due to the high salaries in the US residents have more disposable income than most countries, allowing for these kind of expenditures.
+
+##GDP Component Breakdown by Proportion
+
+```{r, fig.height = 6, fig.width= 10, echo = FALSE}
+prop_GDP <- selected %>%
+  filter(IndicatorName != "GDP") %>%
+  pivot_wider(names_from = IndicatorName, values_from = Value) %>%
+  mutate(Net_Exports = Exports - Imports) %>%
+  select(Country:GCF, Net_Exports) %>%
+  pivot_longer(cols = Household_Exp:Net_Exports,
+               names_to = "Components", 
+               values_to = "Value") %>%
+  group_by(Country, Year) %>%
+  mutate(Value = Value/sum(Value))
+
+ggplot(prop_GDP, aes(x = Year, y = Value, group = Components, color = Components)) +
+  geom_line(size = 1) +
+  labs(title = "GDP and its breakdown at constant 2010 prices in US Dollars", 
+       y = "proportion", caption = "Source: United Nations,https://unstats.un.org/unsd/snaama/Downloads") +
+  facet_wrap(~Country) +
+  scale_x_discrete(breaks = scales::pretty_breaks(5)) +
+  scale_y_continuous(labels = scales ::percent) +
+  scale_color_discrete(labels = c("Gross capital formation", 
+                                 "Government expenditure",
+                                 "Household expenditure",
+                                 "Net Exports")) +
+  theme(panel.grid = element_line(colour = "#f0f0f0"),
+        strip.background = element_rect(colour = "black", size = 0.5, fill = "grey80"),
+        panel.background = element_rect(colour = "black", size=0.5, fill = NA),
+        legend.key = element_rect(colour = "transparent", fill = "transparent"),
+        axis.title.x = element_blank(),
+        plot.caption = element_text(hjust = 1,size = 8))
+```
+
+In this chart we can see Germany's economy has adapted over time to become a net positive exporter, beginning to increase exports around 1999. This coincides with their introduction into the Eurozone, which enabled them to trade their products more freely. 
+In India, we can see the dramatic increase in GCF as a proportion of GDP, which is due to large scale investment happening throughout the 2000s. Because increased investment also drove the quickly growing GDP it simulateously shrunk the proportion of GDP Household expenditures was responsible for.
+
+The United States has a very developed economy and thus the shift in GDP Components is less dramatic. The main things we can see are Government Expenditure and Net Exports falling proportionally as both GCF and Household Expenditures become a larger proportion. The fall of Exports can be attributed to the US transitioning to a service based economy and moving manufacturing to other countries.

@@ -14,35 +14,15 @@ output:
 
 
 
-<div id="challenge-2-excess-rentals-in-tfl-bike-sharing" class="section level1">
-<h1>Challenge 2: Excess rentals in TfL bike sharing</h1>
-<p>Recall the TfL data on how many bikes were hired every single day. We can get the latest data by running the following</p>
-<pre class="r"><code>url &lt;- &quot;https://data.london.gov.uk/download/number-bicycle-hires/ac29363e-e0cb-47cc-a97a-e216d900a6b0/tfl-daily-cycle-hires.xlsx&quot;
-
-# Download TFL data to temporary file
-httr::GET(url, write_disk(bike.temp &lt;- tempfile(fileext = &quot;.xlsx&quot;)))</code></pre>
-<pre><code>## Response [https://airdrive-secure.s3-eu-west-1.amazonaws.com/london/dataset/number-bicycle-hires/2020-09-18T09%3A06%3A54/tfl-daily-cycle-hires.xlsx?X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;X-Amz-Credential=AKIAJJDIMAIVZJDICKHA%2F20200920%2Feu-west-1%2Fs3%2Faws4_request&amp;X-Amz-Date=20200920T184337Z&amp;X-Amz-Expires=300&amp;X-Amz-Signature=cd0c274f17a14957a2454e43aff356e07ee03b96640a919cd29006d093fd9bc8&amp;X-Amz-SignedHeaders=host]
-##   Date: 2020-09-20 18:43
+<pre><code>## Response [https://airdrive-secure.s3-eu-west-1.amazonaws.com/london/dataset/number-bicycle-hires/2020-09-18T09%3A06%3A54/tfl-daily-cycle-hires.xlsx?X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;X-Amz-Credential=AKIAJJDIMAIVZJDICKHA%2F20200920%2Feu-west-1%2Fs3%2Faws4_request&amp;X-Amz-Date=20200920T213631Z&amp;X-Amz-Expires=300&amp;X-Amz-Signature=c4625bd8d6e985426908024845d55d734517c7044f5b27581eda318ad32803b6&amp;X-Amz-SignedHeaders=host]
+##   Date: 2020-09-20 21:37
 ##   Status: 200
 ##   Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
 ##   Size: 165 kB
-## &lt;ON DISK&gt;  C:\Users\kenni\AppData\Local\Temp\RtmpIrU0VT\file47a87d572676.xlsx</code></pre>
-<pre class="r"><code># Use read_excel to read it as dataframe
-bike0 &lt;- read_excel(bike.temp,
-                   sheet = &quot;Data&quot;,
-                   range = cell_cols(&quot;A:B&quot;))
-
-# change dates to get year, month, and week
-bike &lt;- bike0 %&gt;% 
-  clean_names() %&gt;% 
-  rename (bikes_hired = number_of_bicycle_hires) %&gt;% 
-  mutate (year = year(day),
-          month = lubridate::month(day, label = TRUE),
-          week = isoweek(day))</code></pre>
-</div>
+## &lt;ON DISK&gt;  C:\Users\kenni\AppData\Local\Temp\RtmpQbgykL\fileac02978734c.xlsx</code></pre>
 <div id="the-effect-of-covid-on-santander-bike-rentals-in-london" class="section level1">
 <h1>The effect of Covid on Santander bike rentals in London</h1>
-<p>Here we can see how bike usage has changed throughout each year when compared to the monthly averages. In 2020 we saw a significant drop in March due to the onset of COVID. In April almost 10000 less bikes were hired compared to the average year, likely due to the mandatory work from home policies and lockdowns which led to very little intracity travel by residents. However we are seeing that into the summer as reopening has occurred, bikes are being rented at a rate well over average. This can likely be attributed to the shifting of priorities for many transit users, with many opting to rent a bike which has a much lower COVID risk profile than options like the tube.</p>
+<p>Here we have the code that shows how two geom_ribbons can be utilised to create a graph that has different colors depending on whether the chaneg was positive or negative.</p>
 <pre class="r"><code>expected_rentals &lt;- bike %&gt;%
   filter(year &gt;=2015 &amp; year &lt;= 2019) %&gt;%
   group_by(month) %&gt;%
@@ -75,42 +55,9 @@ ggplot(actual_rentals, aes(x = month, y = avg_bikes)) +
               panel.grid = element_line(colour = &quot;#f0f0f0&quot;),
               plot.title = element_text(size = 8),
               axis.title.y = element_blank()) + theme(plot.title = element_text(size = 14))</code></pre>
-<p><img src="/blogs/project1_files/figure-html/first_figure-1.png" width="960" style="display: block; margin: auto;" /></p>
-<p>This second plot gives a slightly more precise view, allowing us to examine the proportional change by week. We can see at it’s lowest point during COVID bike rentals actually dropped ~50%. We can also note that no other year has had an event that caused as significant a change, which further reinforces just how impactful COVID has been on day-to-day life.</p>
-<pre class="r"><code>library(FreqProf)
-expected_rentals &lt;- bike %&gt;%
-  filter(year &gt;=2015 &amp; year &lt;= 2019) %&gt;%
-  group_by(week) %&gt;%
-  summarize(avg_bikes = sum(bikes_hired)/n())
-
-actual_rentals &lt;- bike %&gt;%
-  filter(year &gt;= 2015) %&gt;%
-  group_by(year, week) %&gt;%
-  summarize(actual_bikes = sum(bikes_hired)/n()) %&gt;%
-  inner_join(expected_rentals, by = &quot;week&quot;) %&gt;%
-  summarize(week = week, pct_change = (actual_bikes-avg_bikes)/avg_bikes*100)
-  
-
-
-ggplot(actual_rentals, aes(x = week)) +
-  geom_ribbon(aes(ymin = pmin(0, pct_change), ymax = 0, group = year,
-                  alpha = 0.5),
-              show.legend = F,
-              fill = &quot;#eab5b7&quot;, color = &quot;#ba9495&quot;) +
-  geom_ribbon(aes(ymin = 0, ymax = pmax(0, pct_change), group = year,
-                  alpha = 0.5),
-              show.legend = F,
-              fill = &#39;#c4e4c7&#39;, color = &quot;grey&quot;) +
-  geom_line(size = 0.5, color = &quot;black&quot;, aes(y = pct_change, group = 1)) +
-  labs(title = &quot;Monthly change sin TfL bikerentals&quot;,
-       subtitle = &quot;Change from monthly average shown in blue and calculated between 2015-2019&quot;,
-       y = &quot;Bike rentals&quot;) +
-  facet_wrap(~year) +
-  theme(strip.background = element_rect(fill=&quot;white&quot;, size = 0.5),
-              strip.text = element_text(size=8),
-              panel.background = element_rect(fill = &quot;white&quot;),
-              panel.grid = element_line(colour = &quot;#f0f0f0&quot;),
-              plot.title = element_text(size = 8),
-              axis.title.y = element_blank()) + theme(plot.title = element_text(size = 14))</code></pre>
-<p><img src="/blogs/project1_files/figure-html/weekly_changes-1.png" width="960" style="display: block; margin: auto;" /></p>
+<p><img src="/blogs/project1_files/figure-html/first_figure-1.png" width="960" style="display: block; margin: auto;" />
+Here we can see how bike usage has changed throughout each year when compared to the monthly averages. In 2020 we saw a significant drop in March due to the onset of COVID. In April almost 10000 less bikes were hired compared to the average year, likely due to the mandatory work from home policies and lockdowns which led to very little intracity travel by residents. However we are seeing that into the summer as reopening has occurred, bikes are being rented at a rate well over average. This can likely be attributed to the shifting of priorities for many transit users, with many opting to rent a bike which has a much lower COVID risk profile than options like the tube.</p>
+<p>This second plot is done in a very similar way so the code has been omitted.
+<img src="/blogs/project1_files/figure-html/weekly_changes-1.png" width="960" style="display: block; margin: auto;" />
+This second plot gives a slightly more precise view, allowing us to examine the proportional change by week. We can see at it’s lowest point during COVID bike rentals actually dropped ~50%. We can also note that no other year has had an event that caused as significant a change, which further reinforces just how impactful COVID has been on day-to-day life.</p>
 </div>

@@ -43,11 +43,8 @@ library(readxl)
 library(vroom)
 ```
 
-# Challenge 2: Excess rentals in TfL bike sharing
 
-Recall the TfL data on how many bikes were hired every single day. We can get the latest data by running the following
-
-```{r, get_tfl_data, cache=TRUE}
+```{r, get_tfl_data, cache=TRUE, echo = FALSE}
 url <- "https://data.london.gov.uk/download/number-bicycle-hires/ac29363e-e0cb-47cc-a97a-e216d900a6b0/tfl-daily-cycle-hires.xlsx"
 
 # Download TFL data to temporary file
@@ -71,7 +68,7 @@ bike <- bike0 %>%
 
 # The effect of Covid on Santander bike rentals in London
 
-Here we can see how bike usage has changed throughout each year when compared to the monthly averages. In 2020 we saw a significant drop in March due to the onset of COVID. In April almost 10000 less bikes were hired compared to the average year, likely due to the mandatory work from home policies and lockdowns which led to very little intracity travel by residents. However we are seeing that into the summer as reopening has occurred, bikes are being rented at a rate well over average. This can likely be attributed to the shifting of priorities for many transit users, with many opting to rent a bike which has a much lower COVID risk profile than options like the tube.
+Here we have the code that shows how two geom_ribbons can be utilised to create a graph that has different colors depending on whether the chaneg was positive or negative.
 
 ```{r first_figure, fig.width = 10, fig.height=4}
 expected_rentals <- bike %>%
@@ -108,10 +105,11 @@ ggplot(actual_rentals, aes(x = month, y = avg_bikes)) +
               axis.title.y = element_blank()) + theme(plot.title = element_text(size = 14))
 
 ```
+Here we can see how bike usage has changed throughout each year when compared to the monthly averages. In 2020 we saw a significant drop in March due to the onset of COVID. In April almost 10000 less bikes were hired compared to the average year, likely due to the mandatory work from home policies and lockdowns which led to very little intracity travel by residents. However we are seeing that into the summer as reopening has occurred, bikes are being rented at a rate well over average. This can likely be attributed to the shifting of priorities for many transit users, with many opting to rent a bike which has a much lower COVID risk profile than options like the tube.
 
-This second plot gives a slightly more precise view, allowing us to examine the proportional change by week. We can see at it's lowest point during COVID bike rentals actually dropped ~50%. We can also note that no other year has had an event that caused as significant a change, which further reinforces just how impactful COVID has been on day-to-day life.
 
-```{r weekly_changes, fig.width=10, fig.height = 4}
+This second plot is done in a very similar way so the code has been omitted.
+```{r weekly_changes, fig.width=10, fig.height = 4, echo = FALSE}
 
 library(FreqProf)
 expected_rentals <- bike %>%
@@ -149,5 +147,5 @@ ggplot(actual_rentals, aes(x = week)) +
               plot.title = element_text(size = 8),
               axis.title.y = element_blank()) + theme(plot.title = element_text(size = 14))
 ```
-
+This second plot gives a slightly more precise view, allowing us to examine the proportional change by week. We can see at it's lowest point during COVID bike rentals actually dropped ~50%. We can also note that no other year has had an event that caused as significant a change, which further reinforces just how impactful COVID has been on day-to-day life.
 

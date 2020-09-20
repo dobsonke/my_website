@@ -1,0 +1,632 @@
+---
+title: "Final Group Work - Beijing AirBnBs"
+author: "Group 2: Ken Dobson, Fabian Sinn, Carlota Castro Perez, Jieyi Cai, Proud Chaikul, Othman Bensouda"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+```{r load-libraries, echo=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(mosaic)
+library(ggthemes)
+library(GGally)
+library(readxl)
+library(here)
+library(skimr)
+library(janitor)
+library(broom)
+library(tidyquant)
+library(infer)
+library(openintro)
+library(kableExtra)
+library(corrplot)
+library(ggfortify)
+library(huxtable)
+library(leaflet)
+library(reshape2)
+```
+
+# AirBnB analytics - Beijing
+
+## Introduction 
+
+The following project focuses on the analysis of an [AirBnB dataset](http://data.insideairbnb.com/china/beijing/beijing/2020-06-19/data/listings.csv.gz). As part of the project we are going to perform *Exploratory Data Analysis (EDA)* and  *Data visualization*.
+
+## Executive summary
+
+The dataset obtained from airBnB contained a vast amount of information which allows for the development of a broad range of insights into the operations of airBnB in Beijing. We eliminated over half the columns in the dataset that were not directly related to our task of building a model for the total price of a airBnB over 4 nights. We also had to convert a number of the columns into workable data as many numeric values were stored as strings.
+After building a workable dataset, the data was explored and visualizations were created to further develop an understanding of the data. We observed that there were dramatically different average prices depending on the neighbourhood. Interestingly, the properties in the city centre were not the most expensive as one might initially assume. Instead, **Huajiou**, which is located ~100km outside of the city centre, was the most expensive district. We realized this was due to it's proximity to the Great Wall, a highly popular tourist destination.
+Additionally the property information was overlaid onto a map of Beijing to provide a visual aid to understand the distribution of AirBnb properties and their prices throughout Beijing.
+Correlation matrices were built to provide further insight into the data. It was discovered there were 3 sets of variables that were highly intercorrelated. These were related to rating scores; number of reviews; and accommodation size. When we further examined these groups it was discovered the group related to accommodation size was significantly correlated with the price while the other two had very little correlation. It was also found that the correlations were even higher when the host is a superhost.
+
+# Exploratory Data Analysis
+
+```{r vroom_data, echo = FALSE, cache = TRUE}
+beijing_data <- vroom::vroom("http://data.insideairbnb.com/china/beijing/beijing/2020-06-19/data/listings.csv.gz")%>% 
+  clean_names()
+```
+
+
+```{r missing_data_visual, echo = FALSE}
+
+# Select potentially relevant data columns (variables) to be further analyzed in the next steps
+beijing_selected <- beijing_data %>% 
+  #Select the relevant variables
+  select(id, 
+         host_response_time,
+         host_response_rate,
+         host_acceptance_rate,
+         host_is_superhost,
+         host_listings_count,
+         host_total_listings_count,
+         host_identity_verified,
+         neighbourhood,
+         neighbourhood_cleansed,
+         zipcode,
+         latitude,
+         longitude,
+         is_location_exact,
+         property_type,
+         room_type,
+         accommodates,
+         bathrooms,
+         bedrooms,
+         beds,
+         price,
+         security_deposit,
+         cleaning_fee,
+         guests_included,
+         extra_people,
+         minimum_nights,
+         maximum_nights,
+         number_of_reviews,
+         number_of_reviews_ltm,
+         review_scores_rating,
+         review_scores_checkin,
+         review_scores_cleanliness,
+         review_scores_accuracy,
+         review_scores_communication,
+         review_scores_location,
+         review_scores_value,
+         instant_bookable,
+         cancellation_policy,
+         reviews_per_month) %>%
+  # Perform basic mutate to change data type of numeric variables and parse number 
+  mutate(price = parse_number(price),
+         cleaning_fee = parse_number(cleaning_fee),
+         security_deposit = parse_number(security_deposit),
+         extra_people = parse_number(extra_people),
+         host_response_rate = parse_number(host_response_rate),
+         host_acceptance_rate = parse_number(host_acceptance_rate)
+         )
+```
+
+
+
+```{r Plot_missing_values, fig.width=10, echo = FALSE}
+
+# We plot a bar chart that shows the percentage, thanks to Group 9 for the inspiration  
+
+missing_entries <- beijing_selected %>% 
+  summarise_all(~(sum(is.na(.))/n())*100) %>% 
+  pivot_longer(cols = id:reviews_per_month, names_to = "variable", values_to = "perc_missing_values") %>% 
+  group_by(variable)
+
+
+missing_entries %>% 
+           ggplot(aes(x = reorder(variable, perc_missing_values), y = perc_missing_values, show.legend = FALSE)) +
+           geom_bar(stat = "identity") +
+           coord_flip() +
+           labs(title = "Numerous selected variables in AirBnB dataset have >40% missing values", subtitle = "Percentage of missing values (NAs) is AirBnB dataset", y = "Percentage (%)", x = element_blank()) +
+           theme_bw()
+
+```
+
+We start with some simple exploration, trying to determine what the most common property types are.
+
+*Top 4 property types:*
+
+1. Apartment: 14,428
+2. Condominium: 4,761
+3. House: 4,129
+4. Loft: 2,960
+5. Other: 10,005
+
+```{r, analyse the most common type of properties, echo = FALSE}
+
+ beijing_properties <- beijing_selected %>%
+  #Count the total for the variable property type
+    count(property_type) %>%
+  #Create a new variable to quantify the percentage
+    mutate(percentage = n/sum(n)*100)%>%
+  #Arrange in descending order
+    arrange(desc(n))
+#Choose only the 4 most common properties from the list
+beijing_properties <- slice(beijing_properties, -5:-n())
+
+#Create a new row to specify the total number of the first four variables
+total <- data.frame("Summary top 4",26278,72.43)
+#Specify the names corresponding to the variables we have just added
+names(total) <- c("property_type","n","percentage")
+#Append the row to the others. Call the new datafrane beijing_properties.New
+beijing_properties.New <- rbind(beijing_properties,total)
+
+
+beijing_properties.New %>%
+  #Create a table with package kable extra package
+  
+  #col.names just accounts for the names of the variables
+  kbl(col.names = c("Property type","Count","Percentage (%)")) %>%
+  #Customize the table by defining the font
+  kable_material(c("striped", "hover")) %>%
+  kable_styling(fixed_thead = T)
+
+```
+
+>As we can observe, the top 4 property types account for 72.43% of the total.
+
+> Given that we will only consider Airbnb for travelling purposes, another variable worth exploring is the number of minimum nights.
+
+```{r filter number of nights, echo = FALSE}
+#Create a variable beijing nights to analyse variable minimum_nights
+beijing_nights <- beijing_selected %>%
+  #Count the number of minimum nights
+  count(minimum_nights)%>%
+  #Create a new variable to calculate the percentage
+   mutate(percentage = n/sum(n)*100)%>%
+  #Arrange in descending order
+arrange(desc(n))
+
+# Choose only the 7 most common properties from the list
+# beijing_nights <- slice(beijing_nights, -7:-n())
+
+beijing_nights %>%
+  #Create a table with package kable extra package
+  #col.names just accounts for the names of the variables
+  kbl(col.names = c("Minimum nights","Count","Percentage (%)")) %>%
+  #Customization
+  kable_material(c("striped", "hover")) %>%
+  kable_styling(fixed_thead = T)
+  
+```
+
+> We can see that, undoubtedly, the most common value for the number of nights is 1. It accounts for 83.3% of the total values. Having 1 as a minimum seems to indicate that the main purpose is attracting customers since guests can spend as little or as much time as they need to; there are no restrictions. Additionally, it can be observed that there are some minimum night values that are greater than 2 or much greater than 2. This could be due to the hosts seeking to reduce operational costs; if the number of minimum nights is increased, the property won't have to be cleaned and prepared for the new guests every day.
+
+```{r, echo = FALSE}
+beijing_cleaned <- beijing_selected %>%
+  # Create a new variable prop_type_simplified
+  mutate(prop_type_simplified = case_when(
+    #The property type will be assigned to one of the top four if on the list,
+    #or to Other if it isn't one of the top four
+    property_type %in% c("Apartment","Condominium", "House","Loft") ~ property_type, 
+    TRUE ~ "Other"),
+    
+    # Clean names of neighbourhoods ro be represented in latin letters
+    neighbourhood_cleansed = case_when(
+           neighbourhood_cleansed == "东城区" ~ "Dongcheng",
+           neighbourhood_cleansed == "丰台区 / Fengtai" ~ "Fengtai",
+           neighbourhood_cleansed == "大兴区 / Daxing" ~ "Daxing",
+           neighbourhood_cleansed == "密云县 / Miyun" ~ "Miyun",
+           neighbourhood_cleansed == "平谷区 / Pinggu" ~ "Pinggu",
+           neighbourhood_cleansed == "延庆县 / Yanqing" ~ "Yanqing",
+           neighbourhood_cleansed == "怀柔区 / Huairou" ~ "Huairou",
+           neighbourhood_cleansed == "房山区" ~ "Fangshan",
+           neighbourhood_cleansed == "昌平区" ~ "Changping",
+           neighbourhood_cleansed == "朝阳区 / Chaoyang" ~ "Chaoyang",
+           neighbourhood_cleansed == "海淀区" ~ "Haidian",
+           neighbourhood_cleansed == "石景山区" ~ "Shijingshan",
+           neighbourhood_cleansed == "西城区" ~ "Xicheng",
+           neighbourhood_cleansed == "通州区 / Tongzhou" ~ "Tongzhou",
+           neighbourhood_cleansed == "门头沟区 / Mentougou" ~ "Mentougou",
+           neighbourhood_cleansed == "顺义区 / Shunyi" ~ "Shunyi")
+    ) %>%
+  #In the case we have NAs, give them the name N/A
+  na_if("N/A")
+
+#Assign 0s to the NA values for cleaning fee and security deposit cases
+beijing_cleaned$cleaning_fee[is.na(beijing_cleaned$cleaning_fee)] <- 0
+beijing_cleaned$security_deposit[is.na(beijing_cleaned$security_deposit)] <- 0
+
+#Take a look at the cleaned dataset
+```
+
+
+> A further question that we want to address is: how are AirBnB prices distributed in the different neighbourhoods in Beijing? 
+
+```{r median_price_distr, echo = FALSE}
+
+# Create a dataframe that shows the median prices per night by neighbourhood in Beijing
+median_price_dist <- beijing_cleaned %>% 
+  # select relevant variables
+  select(neighbourhood_cleansed, price) %>%
+  # group by neighbourhood
+  group_by(neighbourhood_cleansed) %>% 
+  # calculate median price per night
+  summarize(median = median(price)) %>% 
+  #Arrange in decreasing order
+  arrange(-median)
+
+# Output bar plot to display price/ night by neighbourhood
+ggplot(data = median_price_dist, aes(x = reorder(neighbourhood_cleansed, median), y = median)) +
+  geom_bar(stat="identity") +
+  labs(title = "AirBnB prices/ night significantly differ by neighbourhood", subtitle = "Median price per night in Beijing by district", x = element_blank(), y = "Median price per night (in Yuan)") +
+  #Flip the coordinates
+  coord_flip() +
+  #Add the theme
+  theme_bw()
+```
+
+> As can be observed in the chart, the median price per night in Beijing for an AirBnB rental differs significantly by neighbourhood. 
+
+> We use the gathered insights to inform our decision on which districts to regroup in the next step in order to narrow the number of currently 16 different neighbourhoods in the dataset. Therefore, we'll not only look at geographical location (e.g. directional or distance from city center), but also take into account whether median prices for the district are comparable. 
+
+> In the following we'll analyse outliers for the variable of interest *price* in order to ensure the overall quality of further analyses. Therefore we'll remove extreme outliers for price, defined as prices above ¥10,000. Reasons for those outliers in the dataset may be fake listings, hosts that increase prices significantly as they don't want to rent out the apartment at this particular point, or extremely luxurious apartments. 
+
+```{r, echo = FALSE}
+# refactor variables and filter for relevant AirBnBs
+
+beijing_cleanbase <- beijing_cleaned %>%
+  # We filter the dataset for listings where the minimum stay is lower or equal to 4 nights and where at least two people can be accommodated 
+  filter(minimum_nights <= 4,
+         accommodates >= 2,
+         price != 0) %>% 
+  # We perform multiple mutate operations in order to transform the variables into factor variables and relevel them
+  mutate(host_response_time = fct_relevel(host_response_time,
+                                            "within an hour", 
+                                            "within a few hours",
+                                            "within a day",
+                                            "a few days or more"),
+         cancellation_policy = fct_relevel(cancellation_policy,
+                                           "flexible",
+                                           "moderate",
+                                           "strict_14_with_grace_period"),
+         prop_type_simplified = fct_relevel(prop_type_simplified,
+                                          "Apartment",
+                                          "Condominium",
+                                          "House",
+                                          "Loft",
+                                          "Other"),
+         room_type = fct_relevel(room_type,
+                                 "Shared room",
+                                 "Private room",
+                                 "Entire home/apt"),
+         # We regroup the 16 neighbourhoods included in the neighbourhood_cleansed variable based on geographic location in Beijing, factoring in the median price per night for the particular district 
+         neighbourhood_simplified = case_when(
+           # no clear grouping possible for the following neighbourhoods, therefore name stays the same
+           neighbourhood_cleansed == "Shunyi" ~ "Shunyi",
+           neighbourhood_cleansed == "Chaoyang" ~ "Chaoyang",
+           neighbourhood_cleansed == "Huairou" ~ "Huairou",
+           # North east Beijing excl. Huairou due to significantly higher price point (Yanqing, Pinggu, Miyun) 
+           neighbourhood_cleansed == "Yanqing" ~ "Northeast Beijing",
+           neighbourhood_cleansed == "Pinggu" ~ "Northeast Beijing",
+           neighbourhood_cleansed == "Miyun" ~ "Northeast Beijing",
+           # Beijing central (Dongcheng, Xicheng)
+           neighbourhood_cleansed == "Dongcheng" ~ "Central Beijing",
+           neighbourhood_cleansed == "Xicheng" ~ "Central Beijing",
+           # Western Beijing (Shijingshan, Haidian, Fengtai) 
+           neighbourhood_cleansed == "Shijingshan" ~ "Western Beijing",
+           neighbourhood_cleansed == "Haidian" ~ "Western Beijing",
+           neighbourhood_cleansed == "Fengtai" ~ "Western Beijing",
+           # Belt of Outskirts (Fangshan, Daxing, Tongzhou, Mentougou, Changping)
+           neighbourhood_cleansed == "Mentougou" ~ "Beijing Outskirts",
+           neighbourhood_cleansed == "Fangshan" ~ "Beijing Outskirts",
+           neighbourhood_cleansed == "Changping" ~ "Beijing Outskirts",
+           neighbourhood_cleansed == "Daxing" ~ "Beijing Outskirts",
+           neighbourhood_cleansed == "Tongzhou" ~ "Beijing Outskirts"
+           ),
+         # set neighbourhood as factor
+         neighbourhood_simplified = as.factor(neighbourhood_simplified),
+         # Calculate the price for 4 nights for 2 people
+         price_4_nights = case_when(guests_included >= 2 ~ (price*4+cleaning_fee),
+                                    TRUE ~ ((price+extra_people)*4+cleaning_fee)),
+         price_4_nights_log = log(price_4_nights),
+         price_log = (log(price))
+         ) %>%
+  select(-neighbourhood, -property_type) %>% 
+  filter(!is.na(host_is_superhost) | !is.na(host_identity_verified)) %>% 
+  # We add an additional filter to remove all extreme outliers from the price, which we determined by adding 5x the interquartile range to the 3rd quartile
+  filter(price < 10000)
+
+```
+
+## Further data exploration
+
+### Analysis on neighbourhoods
+
+> A more in depth look into the distribution of prices by our newly regrouped regions.
+
+```{r,fig.width = 8, echo = FALSE}
+# use violin plot to conduct a better visualization
+beijing_cleanbase %>%
+  group_by(neighbourhood_simplified) %>%
+  ggplot(aes(x = factor(neighbourhood_simplified), y = price), colour = neighbourhood_simplified)+
+  geom_violin(aes(fill= neighbourhood_simplified))+
+  # rescale the y-axis to make the violin plot clearer
+  ylim(0,2500)+
+  # combine a box plot with the violin plot to show the shape of the distribution, its central value, and its variability better.
+  geom_boxplot(width=0.04, fill = "#FCF9F9",
+  # remove the outlier of the boxplot
+               outlier.shape = NA)+
+  # add median point on the plot and make it in red
+  stat_summary(fun.y=median, geom="point", size=1.9, color="black")+ 
+  # add titles and subtitles for the plot as well as rename the axis names.
+  labs(title = "Huairou has the highest range of prices for the listings",
+       subtitle = "Density and distribution of prices for each neighberhood group",
+       x = "Neighbourhood",
+       y = "Price(in Yuan)")+
+  # reorder the plot to make them in a descending order based on the median price
+  scale_x_discrete(limits = c("Huairou", "Northeast Beijing", "Central Beijing", 
+                              "Chaoyang", "Western Beijing", "Shunyi", "Beijing Outskirts"))+
+  scale_fill_manual(values=c("#5E6CC9","#2D866B","#5BC88A","#848A46","#6EA938","#40A3BF","#94D5E2"))+
+  theme_bw()+
+  # remove the legend
+  theme(legend.position = 'none')
+```
+
+> With a statistical table and a violin plot we can definitely observe a couple of things about distribution of prices for Airbnb in Beijing. First, we can state that Huairou has the highest range of prices for the listings with ￥983 price as mean observation, followed by Northest Beijing with ￥601 per night. Beijing Outskirts is the cheapest of them all. This distribution and density of prices were not completely expected; for example, at first, we think Central Beijing may have the highest median price because of its convenient location.
+
+**But why does Huairou have the highest median price? Let's have a look on its reviews score.**
+
+
+### Analysis on Review Score
+
+```{r, fig.width = 8, echo = FALSE}
+#create a bar chart to see the review scores of location for each 
+review_score <- beijing_cleanbase %>%
+  select(review_scores_location, review_scores_rating, neighbourhood_simplified) %>% 
+  #review_scores_location has missing values so for the further calculation we need to remove the NA
+  filter(review_scores_location != "NA") %>% 
+  filter(review_scores_rating != "NA") %>%
+  group_by(neighbourhood_simplified) %>% 
+  summarise(mean_score = mean(review_scores_rating), 
+            mean_score_location = mean(review_scores_location*10)) %>%
+  #melt two dataframes together
+  melt(id.vars = "neighbourhood_simplified") 
+#change the variables' name
+review_score$variable <- factor(review_score$variable, labels = c("Review score of rating", "Review score of location"))
+# create a plot to compare two kinds of review score
+review_score %>% ggplot(aes(x= neighbourhood_simplified, y = value, fill = variable))+
+  geom_bar(stat="identity",position="dodge")+
+  facet_grid(~variable)+
+  # create another y-axis for review score of location
+  scale_y_continuous(sec.axis = sec_axis(~./10, name = " "))+
+  # reorder the neighbourhood base on the review score of rating
+  scale_x_discrete(limits = c("Huairou", "Northeast Beijing", "Beijing Outskirts", 
+                              "Central Beijing", "Chaoyang", "Western Beijing", "Shunyi"))+
+  labs(title = "Huairou has the highest rating scores and score of location\nwhile Central Beijing has a high location score and a relatively low rating score",
+       subtitle = "Mean review scores of rating and location for each neighbourhood",
+       x = "Neighbourhood",
+       y = " ")+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),legend.position = "none")
+```
+
+
+> It's very interesting to find out that people think Huairou has a good location. After our research, we learned about that even though Huairou is situated about 50 kilometers from city center, it is filled with popular tourist attractions, such as the Great Wall. Hence, its airbnbs is equipped with perfect location for tourists and good services. This is why Huairou has the highest review score of location as well as the highest review score of rating. 
+
+> Compared these two plots, we could easily noticed that even though Central Beijing gets a high score in location, it doesn't have a high rating score. On the contrary, Northeast Beijing has a high rating score but the location score is quite low. 
+
+### Analysis on room type
+
+> Room type is also a variable that we think will influence the price. Hence, we are going to look for the answer to the following questions:
+
+> * Is there a difference on accommodate numbers among different room types? 
+> * Which room type has the highest price? 
+
+
+Is there a difference on accommodate numbers among different room types? 
+
+```{r, fig.width = 8, echo = FALSE}
+# create a bar chart to show the number in each accommodates types by different room types
+beijing_cleanbase %>% 
+  select(room_type, accommodates) %>%
+  group_by(room_type, accommodates) %>%
+  count() %>% 
+  ggplot(aes(x = accommodates, y = n, fill = room_type), group = room_type)+
+  geom_bar(stat = "identity")+
+  facet_grid(~room_type)+
+  # only look at accommodates numbers from 1 to 8, which could represent the majority.
+  xlim(1,8)+
+  # add titles and subtitles for the plot as well as rename the axis names.
+  labs(title = "The majority of private room and entire apartment is for 2 accommodates",
+       subtitle = "Number of airbnbs for different accommodates",
+       x = "Accommodates",
+       y = "count")+
+  theme_bw()+
+  theme(legend.position = 'none')
+
+```
+
+> Based on the plot, firstly we could notice that the number of shared room is much less then the entire home or private room in Beijing. Furthermore, it also indicates that most airbnbs are for 2 accommodates. And then we could also find out that a big proportion of entire apartment will rent to 4 accomodates.
+
+Which room type has the highest price?
+
+```{r, fig.width = 8, echo = FALSE}
+# create a violin plot to show the density and distribution for the price grouped by each room type
+beijing_cleanbase %>% 
+  select(room_type, price) %>%
+  ggplot(aes(x = factor(room_type), y = price), colour = room_type)+
+  geom_violin(aes(fill = room_type))+
+  scale_fill_manual(values=c("#5BC88A", "#40A3BF", "#5E6CC9"))+
+  # rescale the y-axis to make the violin plot clearer
+  ylim(0,2000)+
+  # combine a box plot with the violin plot to show the shape of the distribution, its central value, and its variability better.
+  geom_boxplot(width=0.04, fill = "white", outlier.shape = NA)+ 
+  # add median point on the plot and make it in red
+  stat_summary(fun.y=median, geom="point", size=3, color="black")+
+  # add titles and subtitles for the plot as well as rename the axis names.
+  labs(title = "Entire apartments have a highest median price",
+       subtitle = "Density and distribution of prices for each room type",
+       x = "Room Type",
+       y = "Price")+
+  theme_bw()+
+  theme(legend.position = "none")
+```
+
+Now let's have a look and see if room types are distributed differently depending on the neighbourhood, which could impact the average price in those neighbourhoods.
+
+```{r, fig.width = 8, echo = FALSE}
+# create a chart to show the median price for different room types in different neighbourhood
+beijing_cleanbase %>%
+  group_by(neighbourhood_simplified,room_type) %>%
+  # to remove the influence caused by accommodates number, median price is divided by accommodates
+  summarize(median_p = median(price)/accommodates) %>% 
+  ggplot(aes(x = neighbourhood_simplified, y = median_p, fill = room_type))+
+  # visualize the bar in the same plot but in different categories
+  geom_bar(width = 0.6,position = "dodge", stat = "identity")+
+  # add titles and subtitles for the plot as well as rename the axis names.
+  labs(title = "Huairou's shared rooms cost much more than other neighbourhoods\nwhile its private rooms' prices are at the same level as others",
+       subtitle = "The median price of different room type for each neighbourhood",
+       x = " ",
+       y = "Median Price")+
+  #reorder the neighbourhood mannually based on the median price
+  scale_x_discrete(limits = c("Huairou", "Northeast Beijing", "Central Beijing", 
+                              "Chaoyang", "Western Beijing", "Shunyi", "Beijing Outskirts"))+
+  # change the legend name to "Room Type"
+  scale_fill_discrete(name="Room Type")+
+  theme_bw()
+
+```
+
+> From the former plot, we could find that shared rooms have the lowest median price among these three room types. But in this plot, we found that in Huairou and Shunyi Districts, the proportion of shared rooms is higher than we expected but the others are normal. We speculated it's because students tourists are preferred to choose shared rooms.
+
+## Correlations
+
+> We are going to explore the correlations between relevant variables we deem important to our analysis. 
+
+```{r basic_correlations, echo = FALSE}
+
+# Create a dataframe only including the relevant numeric variables for the correlation 
+beijing_corr <- beijing_cleanbase %>% 
+  select(price, 
+         price_4_nights,
+         price_4_nights_log,
+         host_response_rate, 
+         host_acceptance_rate, 
+         host_listings_count, 
+         accommodates, 
+         bedrooms, 
+         beds, 
+         bathrooms, 
+         security_deposit, 
+         cleaning_fee, 
+         guests_included, 
+         extra_people, 
+         number_of_reviews, 
+         number_of_reviews_ltm, 
+         reviews_per_month,
+         review_scores_rating,
+         review_scores_checkin,
+         review_scores_cleanliness,
+         review_scores_accuracy,
+         review_scores_communication,
+         review_scores_location,
+         review_scores_value 
+         )
+  
+```
+
+
+```{r, fig.width = 10, echo = FALSE}
+#create a correllation matrix and then pivot it to together (melt)
+cormat <- round(cor(beijing_corr %>% select(-price_4_nights_log), use = "pairwise.complete.obs"),2)
+melted_cormat <- melt(cormat)
+ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile() + 
+  labs(title = "Correlation Heatmap", x = "", y = "", fill = "Corr. Coeff.") +
+  scale_fill_gradient(low = "white", high = "green") +
+  theme(axis.text.x = element_text(angle = 90),
+        axis.text = element_text(size=8)) 
+```
+
+> Using this HeatMap we can see 3 highly correlated sets of variables. Those are 1. Ratings metric 2. Reviews/time metrics and 3. Info related to the size of the airBnB. We can see that the ratings metrics (1) have almost no correlation with the price of the unit. From the chart below we can see the correlation facts and determine that review_scores have no correlation with price and will remove them from our consideration.
+We are going to disregard all columns that have a correlation coeff with price of < |0.05|.
+Below we can see that the correlation between each set of variables is very significant but they are not correlated in any way with price.
+
+```{r echo = FALSE}
+#Correlation matrix for ratings related columns
+rating_cormat <- beijing_corr %>% 
+  select(price, review_scores_rating:review_scores_value) %>%
+  cor(use = "pairwise.complete.obs") %>%
+  round(2)
+rating_cormat[upper.tri(rating_cormat)] <- ""
+rating_cormat %>%
+  kbl() %>%
+  kable_material(c("striped", "hover")) %>%
+  kable_styling(fixed_thead = T, font_size = 12, full_width = F) 
+#Correlation matrix for num reviews related columns
+review_cormat <- beijing_corr %>% 
+  select(price, number_of_reviews:reviews_per_month) %>%
+  cor(use = "pairwise.complete.obs") %>%
+  round(2)
+review_cormat[upper.tri(review_cormat)] <- ""
+review_cormat %>%
+  kbl() %>%
+  kable_material(c("striped", "hover")) %>%
+  kable_styling(fixed_thead = T, font_size = 12, full_width = F)  
+```
+
+> We can see that the set of variables related to number of guests has some correlation with price according to our heatmap so we plot it to gain a better understanding. Additionally we expect that the factor of being a superhost (*is_superhost*) further positively influences the correlation of those variables with price. Therefore we include it in the following plot to analyze the relationship.   
+
+```{r fig.width = 10}
+beijing_cleanbase %>%
+  select(host_is_superhost, price, bedrooms, beds, accommodates, bathrooms) %>% 
+  # Plot the 
+  GGally::ggpairs(aes(color = host_is_superhost, alpha = 0.4)) + 
+    labs(title = "Multiple variables related to apartment size and amenities highly correlated with price", subtitle = "")
+```
+
+> By looking at the scatterplots, we can observe that the relationships between the variables are not linear. If we focus on the price plots, for instance, we can see that there is a wide range of prices concentrated at a low number of bathrooms, bedrooms and beds; most of the price points are located where number of beds, bedrooms and bathrooms is less than 10. There isn't a clear trend for those points; they are scattered over a wide range of values. In the case of accommodates, the values are spread across the two axes (the price range and the number of accommodates range). Again, there isn't a linear relationship between the variables, which take multiple and widely spread price values.
+In the plots seen above, we tested the impact of host_is_superhost on the correlation. We can observe that the correlations are conditional on the value of this categorical variable, as the correlation numbers are not the same when the host_is_superhost takes different values.
+
+# AirBnB Map in Beijing
+
+```{r, echo = FALSE}
+#make a map
+coloured_price <- colorNumeric(palette = c("darkgreen", "yellow", "red3"), beijing_cleanbase$price)
+leaflet(beijing_cleanbase) %>%
+  #set zoom so people don't accidentally scroll out
+  addTiles(options = providerTileOptions(minZoom = 8)) %>%
+   setView(lng = mean(beijing_cleanbase$longitude),
+           lat = mean(beijing_cleanbase$latitude), 
+           zoom = 8) %>%
+  addCircleMarkers(
+                   lng = ~longitude,
+                   lat = ~latitude,
+                   radius = 1,
+                   #colour by price
+                   color = ~coloured_price(price),
+                   fillOpacity = 0.5,
+                   popup = ~price,
+                   label =  ~paste(room_type,"|",
+                            "Price: ", price)) %>%
+  addLegend("bottomright", pal = coloured_price, values = ~price,
+    title = "Price of Airbnb",
+    labFormat = labelFormat(prefix = "¥"),
+    opacity = 1)
+```
+
+> This is a map with pinpoints of the Airbnb locations in and around Beijing. We are able to see that the Airbnb is clustered heaviliy around Central Beijing. However, in the Huairou area, there are less pinpoints but indicated with more red dots (the more expensive Airbnb locations.) To conclude, this map does correlate with the average price bar chart displayed earlier saying that Huairou has the highest mean price of Airbnb's.

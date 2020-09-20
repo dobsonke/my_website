@@ -8,6 +8,16 @@
     <language>en-us</language>
     <lastBuildDate>Tue, 31 Oct 2017 22:27:21 -0500</lastBuildDate><atom:link href="https://kendobson.netlify.app/blogs/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>Final Group Work - Beijing AirBnBs</title>
+      <link>https://kendobson.netlify.app/blogs/project3/</link>
+      <pubDate>Sun, 20 Sep 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://kendobson.netlify.app/blogs/project3/</guid>
+      <description>AirBnB analytics - BeijingIntroductionThe following project focuses on the analysis of an AirBnB dataset. As part of the project we are going to perform Exploratory Data Analysis (EDA) and Data visualization.
+Executive summaryThe dataset obtained from airBnB contained a vast amount of information which allows for the development of a broad range of insights into the operations of airBnB in Beijing.</description>
+    </item>
+    
+    <item>
       <title>Session 4: Homework 2</title>
       <link>https://kendobson.netlify.app/blogs/homework2/</link>
       <pubDate>Sun, 20 Sep 2020 00:00:00 +0000</pubDate>
@@ -23,8 +33,19 @@ url &amp;lt;- &amp;quot;https://data.london.gov.uk/download/number-bicycle-hires
       <pubDate>Sun, 20 Sep 2020 00:00:00 +0000</pubDate>
       
       <guid>https://kendobson.netlify.app/blogs/project1/</guid>
-      <description>Challenge 2: Excess rentals in TfL bike sharingRecall the TfL data on how many bikes were hired every single day. We can get the latest data by running the following
-url &amp;lt;- &amp;quot;https://data.london.gov.uk/download/number-bicycle-hires/ac29363e-e0cb-47cc-a97a-e216d900a6b0/tfl-daily-cycle-hires.xlsx&amp;quot;# Download TFL data to temporary filehttr::GET(url, write_disk(bike.temp &amp;lt;- tempfile(fileext = &amp;quot;.xlsx&amp;quot;)))## Response [https://airdrive-secure.s3-eu-west-1.amazonaws.com/london/dataset/number-bicycle-hires/2020-09-18T09%3A06%3A54/tfl-daily-cycle-hires.xlsx?X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;amp;X-Amz-Credential=AKIAJJDIMAIVZJDICKHA%2F20200920%2Feu-west-1%2Fs3%2Faws4_request&amp;amp;X-Amz-Date=20200920T184337Z&amp;amp;X-Amz-Expires=300&amp;amp;X-Amz-Signature=cd0c274f17a14957a2454e43aff356e07ee03b96640a919cd29006d093fd9bc8&amp;amp;X-Amz-SignedHeaders=host]## Date: 2020-09-20 18:43## Status: 200## Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet## Size: 165 kB## &amp;lt;ON DISK&amp;gt; C:\Users\kenni\AppData\Local\Temp\RtmpIrU0VT\file47a87d572676.xlsx# Use read_excel to read it as dataframebike0 &amp;lt;- read_excel(bike.</description>
+      <description>## Response [https://airdrive-secure.s3-eu-west-1.amazonaws.com/london/dataset/number-bicycle-hires/2020-09-18T09%3A06%3A54/tfl-daily-cycle-hires.xlsx?X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;amp;X-Amz-Credential=AKIAJJDIMAIVZJDICKHA%2F20200920%2Feu-west-1%2Fs3%2Faws4_request&amp;amp;X-Amz-Date=20200920T213631Z&amp;amp;X-Amz-Expires=300&amp;amp;X-Amz-Signature=c4625bd8d6e985426908024845d55d734517c7044f5b27581eda318ad32803b6&amp;amp;X-Amz-SignedHeaders=host]## Date: 2020-09-20 21:37## Status: 200## Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet## Size: 165 kB## &amp;lt;ON DISK&amp;gt; C:\Users\kenni\AppData\Local\Temp\RtmpQbgykL\fileac02978734c.xlsxThe effect of Covid on Santander bike rentals in LondonHere we have the code that shows how two geom_ribbons can be utilised to create a graph that has different colors depending on whether the chaneg was positive or negative.
+expected_rentals &amp;lt;- bike %&amp;gt;%filter(year &amp;gt;=2015 &amp;amp; year &amp;lt;= 2019) %&amp;gt;%group_by(month) %&amp;gt;%summarize(avg_bikes = sum(bikes_hired)/n())actual_rentals &amp;lt;- bike %&amp;gt;%filter(year &amp;gt;= 2015) %&amp;gt;%group_by(year, month) %&amp;gt;%summarize(actual_bikes = sum(bikes_hired)/n()) %&amp;gt;%inner_join(expected_rentals, by = &amp;quot;month&amp;quot;)ggplot(actual_rentals, aes(x = month, y = avg_bikes)) +geom_ribbon(aes(ymin = avg_bikes, ymax = actual_bikes, group = year,alpha = 0.</description>
+    </item>
+    
+    <item>
+      <title>Session 6: Homework 3</title>
+      <link>https://kendobson.netlify.app/blogs/project2/</link>
+      <pubDate>Sun, 20 Sep 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://kendobson.netlify.app/blogs/project2/</guid>
+      <description>GDP breakdown by Components of##How have these countries developed since BRICS creation in 2010
+The first step in this analysis is to make sure the data is easy to work with so it’s key to pivot the years into a column and rename columns to easy to work with names.
+tidy_GDP_data &amp;lt;- UN_GDP_data %&amp;gt;%pivot_longer(cols = `1970`:`2017`, names_to = &amp;quot;Year&amp;quot;, values_to = &amp;quot;Value&amp;quot;) %&amp;gt;%mutate(Value = Value/1e9, IndicatorName = case_when(IndicatorName == &amp;quot;Final consumption expenditure&amp;quot; ~ &amp;quot;Final_Exp&amp;quot;,IndicatorName == &amp;quot;Household consumption expenditure (including Non-profit institutions serving households)&amp;quot; ~ &amp;quot;Household_Exp&amp;quot;,IndicatorName == &amp;quot;General government final consumption expenditure&amp;quot; ~ &amp;quot;Govt_Exp&amp;quot;,IndicatorName == &amp;quot;Gross capital formation&amp;quot; ~ &amp;quot;GCF&amp;quot;,IndicatorName == &amp;quot;Gross fixed capital formation (including Acquisitions less disposals of valuables)&amp;quot; ~ &amp;quot;GFCF&amp;quot;,IndicatorName == &amp;quot;Exports of goods and services&amp;quot; ~ &amp;quot;Exports&amp;quot;,IndicatorName == &amp;quot;Imports of goods and services&amp;quot; ~ &amp;quot;Imports&amp;quot;,IndicatorName == &amp;quot;Agriculture, hunting, forestry, fishing (ISIC A-B)&amp;quot; ~ &amp;quot;ISICAB&amp;quot;,IndicatorName == &amp;quot;Mining, Manufacturing, Utilities (ISIC C-E)&amp;quot; ~ &amp;quot;ISICCE&amp;quot;,IndicatorName == &amp;quot;Manufacturing (ISIC D)&amp;quot; ~ &amp;quot;ISIC D&amp;quot;,IndicatorName == &amp;quot;Construction (ISIC F)&amp;quot; ~ &amp;quot;ISIC F&amp;quot;,IndicatorName == &amp;quot;Wholesale, retail trade, restaurants and hotels (ISICGH)&amp;quot; ~ &amp;quot;Retail/Tourism&amp;quot;,IndicatorName == &amp;quot;Transport, storage and communication (ISIC I)&amp;quot; ~ &amp;quot;ISICI&amp;quot;,IndicatorName == &amp;quot;Other Activities (ISIC J-P)&amp;quot; ~ &amp;quot;ISICJP&amp;quot;,IndicatorName == &amp;quot;Total Value Added&amp;quot; ~ &amp;quot;Total Value&amp;quot;,IndicatorName == &amp;quot;Gross Domestic Product (GDP)&amp;quot; ~ &amp;quot;GDP&amp;quot;))# Let us compare GDP components for these 3 countriescountry_list &amp;lt;- c(&amp;quot;United States&amp;quot;,&amp;quot;Germany&amp;quot;, &amp;quot;India&amp;quot;)Breakdown by ComponentHere the code is provided to demonstrate how this plot is put together.</description>
     </item>
     
     <item>

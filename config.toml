@@ -48,7 +48,7 @@ disqusShortname = ""
       url = "#"
 
     [[params.navigation.links]]
-      name = "Blogs"
+      name = "Projects"
       url = "blogs"
 
     [[params.navigation.links]]
@@ -70,11 +70,6 @@ disqusShortname = ""
     [[params.navigation.button1]]
       name = "Get Started"
       url = "blogs"
-
-    # Button Style 2
-    [[params.navigation.button2]]
-      name = "Log In"
-      url = "#"
 
 
   # Banner section
@@ -98,22 +93,16 @@ disqusShortname = ""
       url = "blogs/project1"
 
     [[params.tiles.showcase]]
-      title = "Tempus"
-      subtitle = "Feugiat Amet Tempus"
-      image = "pic02.jpg"
-      url = "blogs/tempus"
+      title = "GDP Component Analysis"
+      subtitle = "Breakdown of the GDP of three different economies"
+      image = "un.jpg"
+      url = "blogs/project2"
 
     [[params.tiles.showcase]]
-      title = "Magna"
-      subtitle = "Lorem Etiam Nullam"
-      image = "pic03.jpg"
-      url = "blogs/magna"
-
-    [[params.tiles.showcase]]
-      title = "Ipsum"
-      subtitle = "Nisl Sed Aliquam"
-      image = "pic04.jpg"
-      url = "blogs/ipsum"
+      title = "Analyzing AirBnB prices in Bejing"
+      subtitle = ""
+      image = "beijing.jpg"
+      url = "blogs/project3"
 
     # You can make more showcases by copy and pasting the code above
 
@@ -159,24 +148,11 @@ disqusShortname = ""
     # Contact Section
     # You can add multiple emails, phone numbers, or addresses
     # by copying the corresponding map with frontmatter code.
-    [[params.contact.email]]
-    title = "Email"
-    email = "kdobson.mam2021@london.edu"
 
-    [[params.contact.phone]]
-    title = "Phone"
-    phone = "+44 07933 108 877"
-
-    [[params.contact.address]]
-    title = "Address"
-    street = "Street"
-    city = "City, ST 00000"
-    country = "Country"
 
   # Footer section
   [params.footer]
     enable = true
-    copyright = "Company Name"
 
     # Uses font awesome icons
     
@@ -189,8 +165,3 @@ disqusShortname = ""
       icon = "fa-linkedin"
       url= "https://www.linkedin.com"
       label = "LinkedIn"
-
-    [[params.footer.quicklinks]]
-      text = "Design: "
-      url= "https://www.html5up.net"
-      alt = "HTML5 UP"
